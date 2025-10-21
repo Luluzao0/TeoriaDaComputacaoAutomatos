@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<structure>
+  <type>moore</type>
+  <automaton>
+    <state id="0" name="q0"><x>120.0</x><y>100.0</y><initial/><output>EM_ESPERA</output></state>
+    <state id="1" name="q1"><x>320.0</x><y>100.0</y><output>PROCESSANDO</output></state>
+    <state id="2" name="q2"><x>520.0</x><y>80.0</y><final/><output>CONCEDIDO</output></state>
+    <state id="3" name="q3"><x>520.0</x><y>160.0</y><output>NEGADO</output></state>
+
+    <transition><from>0</from><to>1</to><read>ENTRA</read></transition>
+    <transition><from>1</from><to>2</to><read>ACESSO123</read></transition>
+    <transition><from>1</from><to>2</to><read>ACESSO456</read></transition>
+    <transition><from>0</from><to>3</to><read>SAI</read></transition>
+    <transition><from>1</from><to>3</to><read>SAI</read></transition>
+    <transition><from>0</from><to>3</to><read>ACESSO123</read></transition>
+    <transition><from>0</from><to>3</to><read>ACESSO456</read></transition>
+  </automaton>
+</structure>

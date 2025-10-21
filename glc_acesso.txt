@@ -1,0 +1,6 @@
+S -> ENTRA CODIGO
+CODIGO -> ACESSO123 | ACESSO456
+
+# Exemplos de cadeias geradas:
+# ENTRA ACESSO123
+# ENTRA ACESSO456

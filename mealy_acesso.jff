@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<structure>
+  <type>mealy</type>
+  <automaton>
+    <state id="0" name="q0"><x>100.0</x><y>100.0</y><initial/></state>
+    <state id="1" name="q1"><x>300.0</x><y>100.0</y></state>
+    <state id="2" name="qacc"><x>500.0</x><y>80.0</y></state>
+    <state id="3" name="qrej"><x>500.0</x><y>160.0</y></state>
+    <!-- Inputs: ENTRA, SAI, ACESSO123, ACESSO456 -->
+    <transition><from>0</from><to>1</to><read>ENTRA</read><transout>EM_ESPERA</transout></transition>
+    <transition><from>1</from><to>2</to><read>ACESSO123</read><transout>ACESSO_CONCEDIDO</transout></transition>
+    <transition><from>1</from><to>2</to><read>ACESSO456</read><transout>ACESSO_CONCEDIDO</transout></transition>
+    <transition><from>0</from><to>3</to><read>SAI</read><transout>ACESSO_NEGADO</transout></transition>
+    <transition><from>1</from><to>3</to><read>SAI</read><transout>ACESSO_NEGADO</transout></transition>
+    <transition><from>0</from><to>3</to><read>ACESSO123</read><transout>ACESSO_NEGADO</transout></transition>
+    <transition><from>0</from><to>3</to><read>ACESSO456</read><transout>ACESSO_NEGADO</transout></transition>
+  </automaton>
+</structure>
