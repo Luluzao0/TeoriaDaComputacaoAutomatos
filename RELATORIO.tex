@@ -1,0 +1,503 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+% Configurar estilo de código
+\lstset{
+    language=,
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{black}
+}
+
+% Configurar cabeçalho e rodapé
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Teoria da Computação e Compiladores}
+\lhead{Relatório Prático}
+\cfoot{\thepage}
+
+\title{\textbf{Atividade Prática} \\ \large Teoria da Computação e Compiladores}
+\author{Luis Guilherme Busaglo Lopes \\ Matrícula: 20220086977}
+\date{20 de outubro de 2025}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Este relatório apresenta a implementação e análise prática de diversos modelos de autômatos e máquinas de estados, desenvolvidos no simulador JFLAP. O objetivo é consolidar o conhecimento teórico sobre Autômatos Finitos Determinísticos (AFD), Autômatos Finitos Não-Determinísticos (AFND), Máquinas de Turing, Máquinas de Mealy e Moore, bem como Gramáticas Livres de Contexto (GLC). Cada modelo foi implementado seguindo as especificações teóricas e testado com diferentes entradas para validar seu funcionamento.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introdução}
+
+A Teoria da Computação é a área fundamental da Ciência da Computação que estuda os limites do que pode ser computado e como fazê-lo de forma eficiente. Nesta atividade prática, desenvolvemos e testamos diversos modelos computacionais essenciais:
+
+\begin{itemize}
+    \item \textbf{Autômatos Finitos Determinísticos (AFD)}: Máquinas que leem entrada caractere por caractere e decide aceitar ou rejeitar baseado em uma sequência de transições determinísticas.
+    
+    \item \textbf{Autômatos Finitos Não-Determinísticos (AFND)}: Variação do AFD que permite múltiplas transições possíveis para o mesmo símbolo de entrada.
+    
+    \item \textbf{Máquinas de Turing}: Modelo computacional teórico que simula qualquer computador moderno, com fita infinita e cabeçote móvel.
+    
+    \item \textbf{Máquinas de Mealy e Moore}: Máquinas de estados com saída que geram resultados durante as transições ou estados.
+    
+    \item \textbf{Gramáticas Livres de Contexto (GLC)}: Formalismos para descrever linguagens através de produções gramaticais.
+\end{itemize}
+
+O simulador JFLAP foi utilizado para implementar, visualizar e testar cada um destes modelos.
+
+\newpage
+
+\section{Fundamentação Teórica}
+
+\subsection{Autômatos Finitos Determinísticos (AFD)}
+
+Um Autômato Finito Determinístico é definido formalmente como uma quíntupla:
+\[ M = (Q, \Sigma, \delta, q_0, F) \]
+
+Onde:
+\begin{itemize}
+    \item $Q$ é um conjunto finito de estados;
+    \item $\Sigma$ é um alfabeto (conjunto de símbolos de entrada);
+    \item $\delta: Q \times \Sigma \rightarrow Q$ é a função de transição determinística;
+    \item $q_0 \in Q$ é o estado inicial;
+    \item $F \subseteq Q$ é o conjunto de estados finais (aceitação).
+\end{itemize}
+
+Um AFD processa uma cadeia de entrada símbolo por símbolo, seguindo transições determinísticas. A cadeia é aceita se, após ler todos os símbolos, o autômato termina em um estado final.
+
+\textbf{Exemplo Prático:} O AFD implementado reconhece sequências de tokens de controle de acesso (ENTRA, SAI, ACESSO123, etc.), validando o fluxo de autenticação.
+
+\subsection{Autômatos Finitos Não-Determinísticos (AFND)}
+
+Um Autômato Finito Não-Determinístico estende o conceito de AFD permitindo:
+\[ \delta: Q \times (\Sigma \cup \{\varepsilon\}) \rightarrow \mathcal{P}(Q) \]
+
+Isto é, para um mesmo símbolo, pode haver múltiplas transições possíveis, e também permite transições vazias ($\varepsilon$-transições) que não consomem entrada.
+
+\textbf{Propriedade Importante:} Todo AFND pode ser convertido para um AFD equivalente através da construção de subconjuntos.
+
+\textbf{Exemplo Prático:} O AFND reconhece variações de palavras-chave como ENTRA, ENTRAR, ENTRO, utilizando a não-determinismo para explorar diferentes caminhos.
+
+\subsection{Conversão AFND para AFD}
+
+O processo de conversão utiliza a técnica de construção de subconjuntos:
+
+\begin{enumerate}
+    \item Cada estado do novo AFD representa um subconjunto de estados do AFND;
+    \item O estado inicial é $\{q_0\}$ mais o fecho-ε;
+    \item Para cada estado e símbolo, calcula-se o conjunto de todos os estados alcançáveis;
+    \item Um estado é final se contém pelo menos um estado final do AFND original.
+\end{enumerate}
+
+Esta conversão é importante pois AFDs são mais eficientes computacionalmente para reconhecimento de linguagens.
+
+\subsection{Máquinas de Mealy}
+
+Uma Máquina de Mealy é um autômato que produz saída durante as transições:
+\[ M = (Q, \Sigma, \Lambda, \delta, \lambda, q_0) \]
+
+Onde:
+\begin{itemize}
+    \item $Q$ é o conjunto de estados;
+    \item $\Sigma$ é o alfabeto de entrada;
+    \item $\Lambda$ é o alfabeto de saída;
+    \item $\delta: Q \times \Sigma \rightarrow Q$ é a função de transição;
+    \item $\lambda: Q \times \Sigma \rightarrow \Lambda$ é a função de saída.
+\end{itemize}
+
+A saída depende tanto do estado quanto do símbolo de entrada.
+
+\textbf{Exemplo Prático:} A máquina de Mealy implementada produz mensagens de status (EM_ESPERA, ACESSO_CONCEDIDO, ACESSO_NEGADO) baseado na sequência de entradas.
+
+\subsection{Máquinas de Moore}
+
+Uma Máquina de Moore é uma variação onde a saída depende apenas do estado:
+\[ M = (Q, \Sigma, \Lambda, \delta, \lambda, q_0) \]
+
+Com $\lambda: Q \rightarrow \Lambda$ (saída associada ao estado, não à transição).
+
+A diferença fundamental é que em Moore, a saída é conhecida ao entrar em um estado, enquanto em Mealy, a saída é gerada durante a transição.
+
+\textbf{Exemplo Prático:} A máquina de Moore modela um sistema de controle de acesso onde cada estado representa uma condição específica (PROCESSANDO, CONCEDIDO, NEGADO).
+
+\subsection{Máquinas de Turing}
+
+Uma Máquina de Turing é definida como:
+\[ M = (Q, \Sigma, \Gamma, \delta, q_0, q_{accept}, q_{reject}) \]
+
+Onde:
+\begin{itemize}
+    \item $Q$ é um conjunto finito de estados;
+    \item $\Sigma$ é o alfabeto de entrada;
+    \item $\Gamma$ é o alfabeto da fita (inclui símbolo em branco);
+    \item $\delta: Q \times \Gamma \rightarrow Q \times \Gamma \times \{L, R\}$ é a função de transição;
+    \item $q_0$ é o estado inicial;
+    \item $q_{accept}$ é o estado de aceitação;
+    \item $q_{reject}$ é o estado de rejeição.
+\end{itemize}
+
+A Máquina de Turing possui uma fita infinita e um cabeçote que pode se mover para esquerda ou direita, sendo capaz de computar qualquer função computável.
+
+\textbf{Exemplo Prático:} A máquina de Turing implementada valida códigos de acesso formato "ENTRAACESSO123" ou "ENTRAACESSO456", demonstrando processamento mais complexo que autômatos finitos.
+
+\subsection{Gramáticas Livres de Contexto (GLC)}
+
+Uma Gramática Livre de Contexto é um formalismos de geração de linguagens definido como:
+\[ G = (V, \Sigma, P, S) \]
+
+Onde:
+\begin{itemize}
+    \item $V$ é um conjunto de variáveis (não-terminais);
+    \item $\Sigma$ é um alfabeto de terminais;
+    \item $P$ é um conjunto de produções da forma $A \rightarrow \alpha$;
+    \item $S$ é o símbolo inicial.
+\end{itemize}
+
+GLCs são mais expressivas que linguagens regulares, permitindo estruturas recursivas e aninhadas.
+
+\textbf{Exemplo Prático:} A GLC implementada descreve o padrão de autenticação: primeiro ENTRA, seguido de um código de acesso (ACESSO123 ou ACESSO456).
+
+\newpage
+
+\section{Modelos Implementados}
+
+\subsection{1. Autômato Finito Determinístico (AFD) - Controle de Acesso}
+
+\subsubsection{Especificação}
+
+O AFD implementado reconhece sequências de tokens de controle de acesso:
+\begin{itemize}
+    \item \textbf{Estados:} $q_0$ (inicial), $q_1$ (após ENTRA), $q_2$ (acesso concedido), $q_3$ (rejeitado)
+    \item \textbf{Alfabeto:} Tokens como ENTRA, SAI, ACESSO123, ACESSO456
+    \item \textbf{Linguagem:} Sequências válidas de autenticação
+\end{itemize}
+
+\subsubsection{Regras de Aceitação}
+
+\begin{itemize}
+    \item \textbf{Aceitas:} ENTRA, SAI, ACESSO456
+    \item \textbf{Rejeitadas:} ENTRA, SAI (transição inválida)
+\end{itemize}
+
+O autômato valida que o fluxo segue a ordem correta: entrada → código de acesso → saída.
+
+\subsection{2. Autômato Finito Não-Determinístico (AFND)}
+
+\subsubsection{Especificação}
+
+O AFND reconhece variações de palavras-chave por caractere:
+\begin{itemize}
+    \item \textbf{Linguagem:} $\{ENTRA, ENTRAR, ENTRO\}$
+    \item \textbf{Permite:} Múltiplos caminhos de transição
+    \item \textbf{Inclui:} $\varepsilon$-transições para flexibilidade
+\end{itemize}
+
+\subsubsection{Exemplos de Processamento}
+
+\begin{itemize}
+    \item \textbf{Aceitas:} ENTRA, ENTRAR, ENTRO
+    \item \textbf{Rejeitadas:} ENTRAO, ENTRAR0 (caracteres não esperados)
+\end{itemize}
+
+\subsection{3. Conversão AFND para AFD}
+
+\subsubsection{Processo}
+
+A conversão do AFND para AFD utiliza a técnica de construção de subconjuntos:
+\begin{enumerate}
+    \item Fecho-$\varepsilon$ do estado inicial;
+    \item Para cada símbolo, computar transições de todos os estados alcançáveis;
+    \item Marcar estados contendo estados finais como finais.
+\end{enumerate}
+
+\subsubsection{Resultado}
+
+O AFD resultante é equivalente ao AFND, mas determinístico e potencialmente mais otimizado para execução.
+
+\subsection{4. Máquina de Turing - Validador de Código}
+
+\subsubsection{Especificação}
+
+A Máquina de Turing valida códigos no formato: PREFIX + CÓDIGO
+
+\begin{itemize}
+    \item \textbf{Aceitas:} ENTRAACESSO123, ENTRAACESSO456
+    \item \textbf{Rejeitadas:} ENTRAACESSO124, ENTRAACESSO789
+\end{itemize}
+
+\subsubsection{Funcionamento}
+
+\begin{enumerate}
+    \item Lê a fita e valida o prefixo ENTRA;
+    \item Valida o código (123 ou 456);
+    \item Move o cabeçote conforme necessário;
+    \item Aceita ou rejeita baseado no resultado.
+\end{enumerate}
+
+\subsection{5. Máquina de Mealy - Gerador de Status}
+
+\subsubsection{Especificação}
+
+A máquina de Mealy produz mensagens de status durante transições:
+
+\begin{itemize}
+    \item \textbf{Estados:} Espera, Processando, Concedido, Negado
+    \item \textbf{Entradas:} ENTRA, ACESSO123/456, SAI
+    \item \textbf{Saídas:} EM_ESPERA, ACESSO_CONCEDIDO, ACESSO_NEGADO
+\end{itemize}
+
+\subsubsection{Exemplo de Execução}
+
+\begin{itemize}
+    \item Entrada: ENTRA → Saída: EM_ESPERA
+    \item Entrada: ACESSO123 → Saída: ACESSO_CONCEDIDO
+    \item Entrada: SAI → Saída: ACESSO_NEGADO
+\end{itemize}
+
+\subsection{6. Máquina de Moore - Controle de Estados}
+
+\subsubsection{Especificação}
+
+A máquina de Moore associa saídas aos estados:
+
+\begin{itemize}
+    \item $q_0$: EM_ESPERA
+    \item $q_1$: PROCESSANDO
+    \item $q_2$: CONCEDIDO
+    \item $q_3$: NEGADO
+\end{itemize}
+
+A saída é definida pelo estado, não pela transição.
+
+\subsubsection{Diferença de Mealy}
+
+Moore é mais simples para implementação pois a saída é determinística por estado, enquanto Mealy permite saídas mais específicas por transição.
+
+\subsection{7. Gramática Livre de Contexto}
+
+\subsubsection{Produções}
+
+\begin{lstlisting}
+S -> ENTRA CODIGO
+CODIGO -> ACESSO123 | ACESSO456
+\end{lstlisting}
+
+\subsubsection{Cadeias Geradas}
+
+\begin{itemize}
+    \item ENTRA ACESSO123
+    \item ENTRA ACESSO456
+\end{itemize}
+
+Esta gramática é mais expressiva que um autômato finito pois permite estrutura hierárquica e composição de componentes.
+
+\newpage
+
+\section{Procedimento de Teste}
+
+\subsection{Ambiente de Execução}
+
+Todos os modelos foram testados no simulador \textbf{JFLAP 7.1}, que permite:
+\begin{itemize}
+    \item Simulação passo a passo de autômatos;
+    \item Visualização de transições;
+    \item Teste com múltiplas entradas;
+    \item Conversão entre modelos (AFND → AFD).
+\end{itemize}
+
+\subsection{Protocolo de Teste}
+
+Para cada modelo, executamos:
+
+\begin{enumerate}
+    \item \textbf{Validação do Diagrama:} Verificar se o diagrama está correto e bem definido;
+    \item \textbf{Teste de Aceitação:} Inserir cadeias esperadas para serem aceitas;
+    \item \textbf{Teste de Rejeição:} Inserir cadeias esperadas para serem rejeitadas;
+    \item \textbf{Análise de Transições:} Examinar o caminho de execução passo a passo;
+    \item \textbf{Captura de Evidências:} Registrar screenshots dos resultados.
+\end{enumerate}
+
+\subsection{Critérios de Sucesso}
+
+Um modelo é considerado corretamente implementado se:
+\begin{itemize}
+    \item Aceita todas as cadeias da linguagem esperada;
+    \item Rejeita cadeias fora da linguagem;
+    \item Não apresenta transições indefinidas para entradas válidas;
+    \item O diagrama está coerente com a especificação teórica.
+\end{itemize}
+
+\newpage
+
+\section{Resultados e Análise}
+
+\subsection{Validação Prática}
+
+Cada modelo foi testado e validado conforme segue:
+
+\subsubsection{AFD - Controle de Acesso}
+
+\begin{itemize}
+    \item \textbf{Resultado:} ✓ Funciona corretamente
+    \item \textbf{Aceita:} Sequências válidas em ordem
+    \item \textbf{Rejeita:} Transições fora do padrão esperado
+    \item \textbf{Observação:} Diagrama bem estruturado com estados claramente identificados
+\end{itemize}
+
+\subsubsection{AFND com Variações}
+
+\begin{itemize}
+    \item \textbf{Resultado:} ✓ Funciona corretamente
+    \item \textbf{Aceita:} ENTRA, ENTRAR, ENTRO
+    \item \textbf{Rejeita:} Cadeias com caracteres inválidos
+    \item \textbf{Observação:} O não-determinismo é explorado corretamente pelo simulador
+\end{itemize}
+
+\subsubsection{Conversão AFND → AFD}
+
+\begin{itemize}
+    \item \textbf{Resultado:} ✓ Equivalência preservada
+    \item \textbf{Observação:} O AFD resultante reconhece exatamente a mesma linguagem do AFND
+    \item \textbf{Nota:} Demonstra a importância teórica de que toda linguagem aceita por AFND também é aceita por AFD
+\end{itemize}
+
+\subsubsection{Máquina de Turing}
+
+\begin{itemize}
+    \item \textbf{Resultado:} ✓ Validação de padrão complexo bem-sucedida
+    \item \textbf{Aceita:} Códigos válidos no padrão esperado
+    \item \textbf{Rejeita:} Códigos inválidos ou formatações incorretas
+    \item \textbf{Observação:} Demonstra computabilidade além de autômatos finitos
+\end{itemize}
+
+\subsubsection{Máquina de Mealy}
+
+\begin{itemize}
+    \item \textbf{Resultado:} ✓ Saídas geradas corretamente
+    \item \textbf{Observação:} Transições claras com saídas bem definidas
+    \item \textbf{Uso Prático:} Ideal para tradutores e processadores de linguagem
+\end{itemize}
+
+\subsubsection{Máquina de Moore}
+
+\begin{itemize}
+    \item \textbf{Resultado:} ✓ Estados com saídas associadas funcionando
+    \item \textbf{Observação:} Saídas determinísticas por estado
+    \item \textbf{Vantagem:} Mais simples para implementação em lógica combinacional
+\end{itemize}
+
+\subsubsection{Gramática Livre de Contexto}
+
+\begin{itemize}
+    \item \textbf{Resultado:} ✓ Gera as cadeias esperadas
+    \item \textbf{Observação:} Demonstra a capacidade de linguagens livres de contexto em descrever estruturas mais complexas
+\end{itemize}
+
+\newpage
+
+\section{Discussão e Aprendizados}
+
+\subsection{Conceitos Reforçados}
+
+Esta atividade prática permitiu consolidar vários conceitos fundamentais:
+
+\begin{enumerate}
+    \item \textbf{Equivalência de Modelos:} Compreender que AFND e AFD são equivalentes em poder de reconhecimento, mas diferem em determinismo;
+    
+    \item \textbf{Hierarquia de Linguagens:} Observar que linguagens regulares (AFD/AFND) são um subconjunto de linguagens livres de contexto (GLC);
+    
+    \item \textbf{Máquinas de Estado com Saída:} Entender a diferença prática entre máquinas de Mealy e Moore, e suas aplicações;
+    
+    \item \textbf{Computabilidade:} Perceber como Máquinas de Turing são o modelo mais geral e podem resolver problemas que autômatos finitos não conseguem.
+\end{enumerate}
+
+\subsection{Ferramentas Utilizadas}
+
+O uso do JFLAP foi instrumental para:
+\begin{itemize}
+    \item Visualizar graficamente o funcionamento de autômatos;
+    \item Testar de forma interativa;
+    \item Compreender o fluxo de execução passo a passo;
+    \item Converter entre modelos automaticamente.
+\end{itemize}
+
+\subsection{Aplicações Práticas}
+
+Os modelos implementados encontram aplicações reais em:
+
+\begin{itemize}
+    \item \textbf{Análise Léxica:} Compiladores usam AFDs para tokenizar código fonte;
+    \item \textbf{Análise Sintática:} Gramáticas livres de contexto são usadas para parser;
+    \item \textbf{Processamento de Linguagem Natural:} Máquinas de estado para análise morfológica;
+    \item \textbf{Protocolo de Comunicação:} Máquinas de Mealy/Moore para modelar protocolos;
+    \item \textbf{Sistemas Embarcados:} Máquinas de estado para controle lógico.
+\end{itemize}
+
+\newpage
+
+\section{Conclusão}
+
+Este relatório demonstrou a implementação prática e validação teórica de diversos modelos computacionais fundamentais. Através da utilização do simulador JFLAP, foi possível:
+
+\begin{itemize}
+    \item Consolidar o entendimento de autômatos finitos (determinísticos e não-determinísticos);
+    \item Demonstrar a equivalência entre AFND e AFD através da conversão automática;
+    \item Implementar máquinas de estado com saída (Mealy e Moore);
+    \item Explorar a potência computacional de Máquinas de Turing;
+    \item Validar o comportamento de cada modelo com exemplos práticos.
+\end{itemize}
+
+Os resultados obtidos confirmam que todos os modelos funcionam conforme esperado, aceitando as linguagens para as quais foram projetados e rejeitando cadeias inválidas. Esta atividade reforça a importância de compreender esses formalismos, pois são a base teórica para praticamente todas as ferramentas computacionais modernas, desde compiladores até sistemas de reconhecimento de padrões.
+
+O conhecimento adquirido nesta atividade é fundamental para o desenvolvimento de compiladores, processadores de linguagem, e para compreender os limites teóricos da computação.
+
+\newpage
+
+\appendix
+
+\section{Arquivos Entregues}
+
+A entrega contém os seguintes arquivos:
+
+\begin{itemize}
+    \item \texttt{afd\_acesso.jff} - Autômato Finito Determinístico
+    \item \texttt{afnd\_entr\_variacoes.jff} - Autômato Finito Não-Determinístico
+    \item \texttt{afd\_from\_afnd\_entr\_variacoes.jff} - AFD convertido do AFND
+    \item \texttt{mt\_valida\_entrada\_codigo.jff} - Máquina de Turing
+    \item \texttt{mealy\_acesso.jff} - Máquina de Mealy
+    \item \texttt{moore\_acesso.jff} - Máquina de Moore
+    \item \texttt{glc\_acesso.txt} - Gramática Livre de Contexto
+    \item \texttt{RELATORIO.tex} - Este relatório em LaTeX
+    \item \texttt{screenshots/} - Pasta com evidências em imagem dos testes
+\end{itemize}
+
+\section{Referências Teóricas}
+
+\begin{itemize}
+    \item Sipser, M. (2012). \textit{Introduction to the Theory of Computation}. 3rd Edition.
+    \item Linz, P. (2011). \textit{An Introduction to Formal Languages and Automata}. 5th Edition.
+    \item Hopcroft, J. E., Motwani, R., \& Ullman, J. D. (2006). \textit{Introduction to Automata Theory, Languages, and Computation}. 3rd Edition.
+\end{itemize}
+
+\end{document}
