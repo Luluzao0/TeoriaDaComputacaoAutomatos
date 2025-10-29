@@ -7,6 +7,8 @@ Professor: Edilson Lima
 
 Este é um resumo prático para abrir, simular e gerar os modelos no JFLAP.
 
+ALERTA: caso as imagens nao abram baixe o zip e e faça uso dele(por algum motivo o github barra)
+
 ## 1) O que abrir
 Arquivos na pasta do projeto:
 - AFD: `afd_acesso.jff`
